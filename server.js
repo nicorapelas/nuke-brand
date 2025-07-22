@@ -23,7 +23,7 @@ app.use(bodyParser.urlencoded({ extended: true }))
 app.use(express.static(path.join(__dirname, '../web/build')))
 
 // API Routes
-app.use('/api/root', rootRouter)
+app.use('/', rootRouter)
 app.use('/api/products', productsRouter)
 app.use('/api/cart', cartRouter)
 app.use('/api/orders', ordersRouter)
