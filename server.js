@@ -13,7 +13,7 @@ connectDB().catch(console.error)
 
 // Middleware
 app.use(cors({
-  origin: 'http://localhost:3000',
+  origin: ['http://localhost:3000', 'https://www.nukebrand.com', 'https://nukebrand.com'],
   credentials: true,
 }))
 app.use(bodyParser.json())
