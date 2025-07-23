@@ -4,6 +4,7 @@ const keys = require('../config/keys')
 const { currentConfig } = require('../config/payfast')
 const { getDB } = require('../config/database')
 const { v4: uuidv4 } = require('uuid')
+const { sendEmail } = require('../config/email')
 
 const router = express.Router()
 
@@ -196,6 +197,34 @@ router.post('/notify', async (req, res) => {
       updateData.status = 'paid'
       // Clear cart after successful payment
       await db.collection('cart').deleteMany({})
+
+      // Fetch the order details for the email
+      const order = await db.collection('orders').findOne({ id: orderId })
+      if (order) {
+        // Build order summary HTML
+        const itemsHtml = order.items.map(item =>
+          `<li>${item.title} (x${item.quantity}) - R${item.price}</li>`,
+        ).join('')
+        const emailBody = `
+          <h2>New Paid Order Received</h2>
+          <p><strong>Order ID:</strong> ${order.id}</p>
+          <p><strong>Customer:</strong> ${order.customerInfo.firstName} ${order.customerInfo.lastName} (${order.customerInfo.email})</p>
+          <p><strong>Phone:</strong> ${order.customerInfo.phone || ''}</p>
+          <p><strong>Address:</strong> ${order.customerInfo.address}, ${order.customerInfo.city}, ${order.customerInfo.province}, ${order.customerInfo.postalCode}</p>
+          <p><strong>Total:</strong> R${order.total}</p>
+          <p><strong>Items:</strong></p>
+          <ul>${itemsHtml}</ul>
+          <hr>
+          <p><em>Sent automatically from Nuke Brand website (PayFast payment successful)</em></p>
+        `
+        await sendEmail({
+          name: `${order.customerInfo.firstName} ${order.customerInfo.lastName}`,
+          email: order.customerInfo.email,
+          subject: `New Paid Order: ${order.id}`,
+          message: emailBody,
+          to: 'jacobscycles@gmail.com',
+        })
+      }
     } else if (data.payment_status === 'FAILED') {
       updateData.status = 'failed'
     }
