@@ -27,9 +27,9 @@ const keys = {
   payfast: {
     merchantId: process.env.PAYFAST_MERCHANT_ID || 'YOUR_PRODUCTION_MERCHANT_ID',
     merchantKey: process.env.PAYFAST_MERCHANT_KEY || 'YOUR_PRODUCTION_MERCHANT_KEY',
-    returnUrl: process.env.PAYFAST_RETURN_URL || 'https://4d1507650a18.ngrok-free.app/payment/success',
-    cancelUrl: process.env.PAYFAST_CANCEL_URL || 'https://4d1507650a18.ngrok-free.app/payment/cancel',
-    notifyUrl: process.env.PAYFAST_NOTIFY_URL || 'https://4d1507650a18.ngrok-free.app/api/payments/notify',
+    returnUrl: process.env.PAYFAST_RETURN_URL || 'https://www.nukebrand.com/payment/success',
+    cancelUrl: process.env.PAYFAST_CANCEL_URL || 'https://www.nukebrand.com/payment/cancel',
+    notifyUrl: process.env.PAYFAST_NOTIFY_URL || 'https://nuke-brand-d2ea8b9b3c96.herokuapp.com/api/payments/notify',
     passPhrase: process.env.PAYFAST_PASSPHRASE || 'YOUR_PRODUCTION_PASSPHRASE',
     testMode: false,
     baseUrl: 'https://www.payfast.co.za/eng/process',
