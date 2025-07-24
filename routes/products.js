@@ -107,61 +107,6 @@ router.get('/test', (req, res) => {
   res.json({ message: 'Products API is working' })
 })
 
-// Get all products
-router.get('/', async (req, res) => {
-  console.log('GET /api/products - All products requested')
-  try {
-    if (!isDBConnected()) {
-      console.log('Database not connected, returning sample products')
-      return res.json(sampleProducts)
-    }
-    const db = getDB()
-    const products = await db.collection('products').find({}).toArray()
-    res.json(products)
-  } catch (error) {
-    console.error('Error fetching products:', error.message)
-    // Return sample products if database is not available
-    res.json(sampleProducts)
-  }
-})
-
-// Get single product by handle
-router.get('/:handle', async (req, res) => {
-  console.log(`GET /api/products/${req.params.handle} - Product requested`)
-  try {
-    if (!isDBConnected()) {
-      console.log('Database not connected, returning sample product')
-      const product = sampleProducts.find(p => p.handle === req.params.handle)
-      if (!product) {
-        return res.status(404).json({ error: 'Product not found' })
-      }
-      return res.json(product)
-    }
-    
-    const db = getDB()
-    const product = await db.collection('products').findOne({ handle: req.params.handle })
-    
-    if (!product) {
-      return res.status(404).json({ error: 'Product not found' })
-    }
-    res.json(product)
-  } catch (error) {
-    console.error('Error fetching product:', error.message)
-    // Return sample product if database is not available
-    const product = sampleProducts.find(p => p.handle === req.params.handle)
-    if (!product) {
-      return res.status(404).json({ error: 'Product not found' })
-    }
-    res.json(product)
-  }
-})
-
-// Initialize products on module load
-setTimeout(() => {
-  console.log('Starting product seeding...')
-  seedProducts()
-}, 2000) // Wait 2 seconds for database connection to be fully established
-
 // Manual seeding endpoint
 router.post('/seed', async (req, res) => {
   try {
@@ -267,5 +212,60 @@ router.get('/add-test-product', async (req, res) => {
     res.status(500).json({ error: 'Failed to add test product' })
   }
 })
+
+// Get all products
+router.get('/', async (req, res) => {
+  console.log('GET /api/products - All products requested')
+  try {
+    if (!isDBConnected()) {
+      console.log('Database not connected, returning sample products')
+      return res.json(sampleProducts)
+    }
+    const db = getDB()
+    const products = await db.collection('products').find({}).toArray()
+    res.json(products)
+  } catch (error) {
+    console.error('Error fetching products:', error.message)
+    // Return sample products if database is not available
+    res.json(sampleProducts)
+  }
+})
+
+// Get single product by handle
+router.get('/:handle', async (req, res) => {
+  console.log(`GET /api/products/${req.params.handle} - Product requested`)
+  try {
+    if (!isDBConnected()) {
+      console.log('Database not connected, returning sample product')
+      const product = sampleProducts.find(p => p.handle === req.params.handle)
+      if (!product) {
+        return res.status(404).json({ error: 'Product not found' })
+      }
+      return res.json(product)
+    }
+    
+    const db = getDB()
+    const product = await db.collection('products').findOne({ handle: req.params.handle })
+    
+    if (!product) {
+      return res.status(404).json({ error: 'Product not found' })
+    }
+    res.json(product)
+  } catch (error) {
+    console.error('Error fetching product:', error.message)
+    // Return sample product if database is not available
+    const product = sampleProducts.find(p => p.handle === req.params.handle)
+    if (!product) {
+      return res.status(404).json({ error: 'Product not found' })
+    }
+    res.json(product)
+  }
+})
+
+// Initialize products on module load
+setTimeout(() => {
+  console.log('Starting product seeding...')
+  seedProducts()
+}, 2000) // Wait 2 seconds for database connection to be fully established
 
 module.exports = router
