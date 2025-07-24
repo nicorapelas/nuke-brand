@@ -177,15 +177,43 @@ router.post('/notify', async (req, res) => {
     console.log('Headers:', req.headers)
     console.log('=====================================')
     
-    // Verify signature
+    // For notifications, we need to verify the signature differently
+    // PayFast sends different data format in notifications vs initial payment
     const signature = data.signature
-    delete data.signature
+    const dataForVerification = { ...data }
+    delete dataForVerification.signature
     
-    const isValid = verifySignature(data, signature, currentConfig.passPhrase)
+    // Log the data we're using for verification
+    console.log('Data for signature verification:', JSON.stringify(dataForVerification, null, 2))
+    
+    // Generate signature for verification
+    let paramString = ''
+    const sortedKeys = Object.keys(dataForVerification).sort()
+    
+    sortedKeys.forEach(key => {
+      if (dataForVerification[key] !== null && dataForVerification[key] !== undefined && dataForVerification[key] !== '') {
+        const value = dataForVerification[key].toString()
+        const encodedValue = encodeURIComponent(value)
+        paramString += `${key}=${encodedValue}&`
+      }
+    })
+    
+    paramString = paramString.slice(0, -1)
+    paramString += `&passphrase=${encodeURIComponent(currentConfig.passPhrase)}`
+    
+    const calculatedSignature = crypto.createHash('md5').update(paramString).digest('hex')
+    const isValid = calculatedSignature === signature
+    
+    console.log('Signature verification details:')
+    console.log('Received signature:', signature)
+    console.log('Calculated signature:', calculatedSignature)
+    console.log('Parameter string:', paramString)
     console.log('Signature valid:', isValid)
     
     if (!isValid) {
       console.error('Invalid PayFast signature')
+      console.error('Expected:', calculatedSignature)
+      console.error('Received:', signature)
       return res.status(400).send('Invalid signature')
     }
 
