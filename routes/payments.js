@@ -321,6 +321,28 @@ router.get('/status/:orderId', async (req, res) => {
   }
 })
 
+// Get most recent paid order for a given email
+router.get('/latest-paid-order', async (req, res) => {
+  try {
+    const { email } = req.query
+    if (!email) {
+      return res.status(400).json({ error: 'Email is required' })
+    }
+    const db = getDB()
+    const order = await db.collection('orders').find({
+      'customerInfo.email': email,
+      status: 'paid',
+    }).sort({ createdAt: -1 }).limit(1).toArray()
+    if (!order || order.length === 0) {
+      return res.status(404).json({ error: 'No paid order found for this email' })
+    }
+    res.json({ success: true, order: order[0] })
+  } catch (error) {
+    console.error('Error fetching latest paid order:', error)
+    res.status(500).json({ error: 'Failed to fetch latest paid order' })
+  }
+})
+
 // Test PayFast configuration
 router.get('/test-config', (req, res) => {
   try {
