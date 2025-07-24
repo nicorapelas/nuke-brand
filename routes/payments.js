@@ -172,11 +172,17 @@ router.post('/notify', async (req, res) => {
   try {
     const data = req.body
     
+    console.log('=== PAYFAST NOTIFICATION RECEIVED ===')
+    console.log('Notification data:', JSON.stringify(data, null, 2))
+    console.log('Headers:', req.headers)
+    console.log('=====================================')
+    
     // Verify signature
     const signature = data.signature
     delete data.signature
     
     const isValid = verifySignature(data, signature, currentConfig.passPhrase)
+    console.log('Signature valid:', isValid)
     
     if (!isValid) {
       console.error('Invalid PayFast signature')
@@ -186,6 +192,7 @@ router.post('/notify', async (req, res) => {
     // Update order status
     const db = getDB()
     const orderId = data.m_payment_id
+    console.log('Processing order ID:', orderId)
     
     const updateData = {
       paymentStatus: data.payment_status,
@@ -194,13 +201,17 @@ router.post('/notify', async (req, res) => {
     }
 
     if (data.payment_status === 'COMPLETE') {
+      console.log('Payment completed, updating order status to paid')
       updateData.status = 'paid'
       // Clear cart after successful payment
       await db.collection('cart').deleteMany({})
 
       // Fetch the order details for the email
       const order = await db.collection('orders').findOne({ id: orderId })
+      console.log('Found order for email:', order ? 'Yes' : 'No')
+      
       if (order) {
+        console.log('Sending order confirmation email...')
         // Build order summary HTML
         const itemsHtml = order.items.map(item =>
           `<li>${item.title} (x${item.quantity}) - R${item.price}</li>`,
@@ -217,15 +228,24 @@ router.post('/notify', async (req, res) => {
           <hr>
           <p><em>Sent automatically from Nuke Brand website (PayFast payment successful)</em></p>
         `
-        await sendEmail({
-          name: `${order.customerInfo.firstName} ${order.customerInfo.lastName}`,
-          email: order.customerInfo.email,
-          subject: `New Paid Order: ${order.id}`,
-          message: emailBody,
-          to: 'jacobscycles@gmail.com',
-        })
+        
+        try {
+          await sendEmail({
+            name: `${order.customerInfo.firstName} ${order.customerInfo.lastName}`,
+            email: order.customerInfo.email,
+            subject: `New Paid Order: ${order.id}`,
+            message: emailBody,
+            to: 'jacobscycles@gmail.com',
+          })
+          console.log('Order confirmation email sent successfully')
+        } catch (emailError) {
+          console.error('Error sending order confirmation email:', emailError)
+        }
+      } else {
+        console.log('Order not found in database for email notification')
       }
     } else if (data.payment_status === 'FAILED') {
+      console.log('Payment failed, updating order status to failed')
       updateData.status = 'failed'
     }
 
@@ -233,6 +253,7 @@ router.post('/notify', async (req, res) => {
       { id: orderId },
       { $set: updateData },
     )
+    console.log('Order status updated in database')
 
     res.status(200).send('OK')
   } catch (error) {
