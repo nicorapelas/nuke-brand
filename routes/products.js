@@ -184,4 +184,88 @@ router.get('/seed', async (req, res) => {
   }
 })
 
+// Add test product endpoint
+router.post('/add-test-product', async (req, res) => {
+  try {
+    if (!isDBConnected()) {
+      return res.status(500).json({ error: 'Database not connected' })
+    }
+    
+    const db = getDB()
+    const productsCollection = db.collection('products')
+    
+    // Check if test product already exists
+    const existingTestProduct = await productsCollection.findOne({ handle: 'test-product-r5' })
+    
+    if (existingTestProduct) {
+      return res.json({ success: true, message: 'Test product already exists' })
+    }
+    
+    // Add the test product
+    const testProduct = {
+      id: '5',
+      handle: 'test-product-r5',
+      title: 'Test Product - R5.00',
+      price: 5.00,
+      description: 'This is a test product for testing the checkout process. Price: R5.00',
+      image: '/images/g7.png',
+      specs: {
+        waterResistance: 'Test',
+        material: 'Test Material',
+        weight: 'Test Weight',
+      },
+    }
+    
+    const result = await productsCollection.insertOne(testProduct)
+    console.log('Test product added successfully:', result.insertedId)
+    
+    res.json({ success: true, message: 'Test product added successfully' })
+  } catch (error) {
+    console.error('Error adding test product:', error.message)
+    res.status(500).json({ error: 'Failed to add test product' })
+  }
+})
+
+// GET version for easy testing
+router.get('/add-test-product', async (req, res) => {
+  try {
+    if (!isDBConnected()) {
+      return res.status(500).json({ error: 'Database not connected' })
+    }
+    
+    const db = getDB()
+    const productsCollection = db.collection('products')
+    
+    // Check if test product already exists
+    const existingTestProduct = await productsCollection.findOne({ handle: 'test-product-r5' })
+    
+    if (existingTestProduct) {
+      return res.json({ success: true, message: 'Test product already exists' })
+    }
+    
+    // Add the test product
+    const testProduct = {
+      id: '5',
+      handle: 'test-product-r5',
+      title: 'Test Product - R5.00',
+      price: 5.00,
+      description: 'This is a test product for testing the checkout process. Price: R5.00',
+      image: '/images/g7.png',
+      specs: {
+        waterResistance: 'Test',
+        material: 'Test Material',
+        weight: 'Test Weight',
+      },
+    }
+    
+    const result = await productsCollection.insertOne(testProduct)
+    console.log('Test product added successfully:', result.insertedId)
+    
+    res.json({ success: true, message: 'Test product added successfully' })
+  } catch (error) {
+    console.error('Error adding test product:', error.message)
+    res.status(500).json({ error: 'Failed to add test product' })
+  }
+})
+
 module.exports = router
