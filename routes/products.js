@@ -1,6 +1,6 @@
-const express = require('express');
-const router = express.Router();
-const { getDB, isDBConnected } = require('../config/database');
+const express = require('express')
+const router = express.Router()
+const { getDB, isDBConnected } = require('../config/database')
 
 // Sample products data for initial seeding
 const sampleProducts = [
@@ -14,8 +14,8 @@ const sampleProducts = [
     specs: {
       waterResistance: '30m',
       material: 'Polymer',
-      weight: '43g'
-    }
+      weight: '43g',
+    },
   },
   {
     id: '2',
@@ -27,8 +27,8 @@ const sampleProducts = [
     specs: {
       waterResistance: '50m',
       material: 'Polymer',
-      weight: '47g'
-    }
+      weight: '47g',
+    },
   },
   {
     id: '3',
@@ -40,8 +40,8 @@ const sampleProducts = [
     specs: {
       waterResistance: '30m',
       material: 'Polymer',
-      weight: '43g'
-    }
+      weight: '43g',
+    },
   },
   {
     id: '4',
@@ -53,122 +53,135 @@ const sampleProducts = [
     specs: {
       waterResistance: '50m',
       material: 'Polymer',
-      weight: '47g'
-    }
-  }
-];
+      weight: '47g',
+    },
+  },
+  {
+    id: '5',
+    handle: 'test-product-r5',
+    title: 'Test Product - R5.00',
+    price: 5.00,
+    description: 'This is a test product for testing the checkout process. Price: R5.00',
+    image: '/images/g7.png',
+    specs: {
+      waterResistance: 'Test',
+      material: 'Test Material',
+      weight: 'Test Weight',
+    },
+  },
+]
 
 // Seed products if collection is empty
 const seedProducts = async () => {
   try {
     if (!isDBConnected()) {
-      console.log('Database not connected, skipping product seeding');
-      return;
+      console.log('Database not connected, skipping product seeding')
+      return
     }
     
-    const db = getDB();
-    const productsCollection = db.collection('products');
+    const db = getDB()
+    const productsCollection = db.collection('products')
     
-    const count = await productsCollection.countDocuments();
-    console.log(`Found ${count} existing products in database`);
+    const count = await productsCollection.countDocuments()
+    console.log(`Found ${count} existing products in database`)
     
     if (count === 0) {
-      console.log('No products found, seeding sample products...');
-      const result = await productsCollection.insertMany(sampleProducts);
-      console.log(`Products seeded successfully. Inserted ${result.insertedCount} products`);
+      console.log('No products found, seeding sample products...')
+      const result = await productsCollection.insertMany(sampleProducts)
+      console.log(`Products seeded successfully. Inserted ${result.insertedCount} products`)
       
       // Verify the products were inserted
-      const verifyCount = await productsCollection.countDocuments();
-      console.log(`Verified: ${verifyCount} products now in database`);
+      const verifyCount = await productsCollection.countDocuments()
+      console.log(`Verified: ${verifyCount} products now in database`)
     } else {
-      console.log('Products already exist in database, skipping seeding');
+      console.log('Products already exist in database, skipping seeding')
     }
   } catch (error) {
-    console.error('Error seeding products:', error.message);
+    console.error('Error seeding products:', error.message)
   }
-};
+}
 
 // Test endpoint
 router.get('/test', (req, res) => {
-  console.log('Test endpoint hit');
-  res.json({ message: 'Products API is working' });
-});
+  console.log('Test endpoint hit')
+  res.json({ message: 'Products API is working' })
+})
 
 // Get all products
 router.get('/', async (req, res) => {
-  console.log('GET /api/products - All products requested');
+  console.log('GET /api/products - All products requested')
   try {
     if (!isDBConnected()) {
-      console.log('Database not connected, returning sample products');
-      return res.json(sampleProducts);
+      console.log('Database not connected, returning sample products')
+      return res.json(sampleProducts)
     }
-    const db = getDB();
-    const products = await db.collection('products').find({}).toArray();
-    res.json(products);
+    const db = getDB()
+    const products = await db.collection('products').find({}).toArray()
+    res.json(products)
   } catch (error) {
-    console.error('Error fetching products:', error.message);
+    console.error('Error fetching products:', error.message)
     // Return sample products if database is not available
-    res.json(sampleProducts);
+    res.json(sampleProducts)
   }
-});
+})
 
 // Get single product by handle
 router.get('/:handle', async (req, res) => {
-  console.log(`GET /api/products/${req.params.handle} - Product requested`);
+  console.log(`GET /api/products/${req.params.handle} - Product requested`)
   try {
     if (!isDBConnected()) {
-      console.log('Database not connected, returning sample product');
-      const product = sampleProducts.find(p => p.handle === req.params.handle);
+      console.log('Database not connected, returning sample product')
+      const product = sampleProducts.find(p => p.handle === req.params.handle)
       if (!product) {
-        return res.status(404).json({ error: 'Product not found' });
+        return res.status(404).json({ error: 'Product not found' })
       }
-      return res.json(product);
+      return res.json(product)
     }
     
-    const db = getDB();
-    const product = await db.collection('products').findOne({ handle: req.params.handle });
+    const db = getDB()
+    const product = await db.collection('products').findOne({ handle: req.params.handle })
     
     if (!product) {
-      return res.status(404).json({ error: 'Product not found' });
+      return res.status(404).json({ error: 'Product not found' })
     }
-    res.json(product);
+    res.json(product)
   } catch (error) {
-    console.error('Error fetching product:', error.message);
+    console.error('Error fetching product:', error.message)
     // Return sample product if database is not available
-    const product = sampleProducts.find(p => p.handle === req.params.handle);
+    const product = sampleProducts.find(p => p.handle === req.params.handle)
     if (!product) {
-      return res.status(404).json({ error: 'Product not found' });
+      return res.status(404).json({ error: 'Product not found' })
     }
-    res.json(product);
+    res.json(product)
   }
-});
+})
 
 // Initialize products on module load
 setTimeout(() => {
-  console.log('Starting product seeding...');
-  seedProducts();
-}, 2000); // Wait 2 seconds for database connection to be fully established
+  console.log('Starting product seeding...')
+  seedProducts()
+}, 2000) // Wait 2 seconds for database connection to be fully established
 
 // Manual seeding endpoint
 router.post('/seed', async (req, res) => {
   try {
-    await seedProducts();
-    res.json({ success: true, message: 'Products seeded successfully' });
+    await seedProducts()
+    res.json({ success: true, message: 'Products seeded successfully' })
   } catch (error) {
-    console.error('Error seeding products:', error.message);
-    res.status(500).json({ error: 'Failed to seed products' });
+    console.error('Error seeding products:', error.message)
+    res.status(500).json({ error: 'Failed to seed products' })
   }
-});
+})
 
 // Manual seeding endpoint (GET version for easy testing)
 router.get('/seed', async (req, res) => {
   try {
-    await seedProducts();
-    res.json({ success: true, message: 'Products seeded successfully' });
+    await seedProducts()
+    res.json({ success: true, message: 'Products seeded successfully' })
   } catch (error) {
-    console.error('Error seeding products:', error.message);
-    res.status(500).json({ error: 'Failed to seed products' });
+    console.error('Error seeding products:', error.message)
+    res.status(500).json({ error: 'Failed to seed products' })
   }
-});
+})
 
-module.exports = router;
+module.exports = router
