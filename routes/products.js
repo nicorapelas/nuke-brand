@@ -56,19 +56,6 @@ const sampleProducts = [
       weight: '47g',
     },
   },
-  {
-    id: '5',
-    handle: 'test-product-r5',
-    title: 'Test Product - R5.00',
-    price: 5.00,
-    description: 'This is a test product for testing the checkout process. Price: R5.00',
-    image: '/images/g7.png',
-    specs: {
-      waterResistance: 'Test',
-      material: 'Test Material',
-      weight: 'Test Weight',
-    },
-  },
 ]
 
 // Seed products if collection is empty
